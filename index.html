@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SUDAQ Certificate Verification</title>
+  <style>
+    :root { --accent:#0b5394; --bg:#f7f7f8; --card:#ffffff; --text:#111827; --muted:#6b7280; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+           background:var(--bg); color:var(--text); }
+    .wrap { max-width: 880px; margin: 40px auto; padding: 0 16px; }
+    .card { background:var(--card); border-radius: 16px; padding: 22px; box-shadow: 0 6px 24px rgba(0,0,0,.08); }
+    h1 { margin:0 0 6px; font-size: 22px; }
+    p { margin: 8px 0; color: var(--muted); line-height: 1.5; }
+    .row { display:flex; gap:10px; margin-top: 14px; flex-wrap: wrap; }
+    input { flex: 1 1 320px; padding: 12px 14px; border-radius: 12px; border: 1px solid #d1d5db; font-size: 14px; }
+    button { padding: 12px 14px; border-radius: 12px; border: 0; background: var(--accent); color: #fff;
+             font-size: 14px; cursor:pointer; }
+    button:disabled { opacity:.6; cursor:not-allowed; }
+    .result { margin-top: 18px; padding: 14px; border-radius: 12px; border: 1px solid #e5e7eb; background: #fafafa; }
+    .ok { border-color: #86efac; background: #f0fdf4; }
+    .bad { border-color: #fecaca; background: #fef2f2; }
+    .kv { margin-top: 10px; display:grid; grid-template-columns: 170px 1fr; gap: 6px 12px; }
+    .k { color: var(--muted); }
+    .v { color: var(--text); font-weight: 600; }
+    footer { margin-top: 14px; font-size: 12px; color: var(--muted); }
+    code { background:#f3f4f6; padding: 2px 6px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>SUDAQ Certificate Verification</h1>
+      <p>Enter a Certificate ID to verify validity.</p>
+
+      <div class="row">
+        <input id="cid" placeholder="Certificate ID (e.g., SUDAQ-MB-2026-XXXXXX)" autocomplete="off" />
+        <button id="btn">Verify</button>
+      </div>
+
+      <div id="out" class="result" style="display:none;"></div>
+
+      <footer>
+        This page verifies certificates by matching the entered ID against the official issuance list.
+      </footer>
+    </div>
+  </div>
+
+<script>
+  const out = document.getElementById('out');
+  const btn = document.getElementById('btn');
+  const cid = document.getElementById('cid');
+
+  function esc(s) {
+    return String(s)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function notFound(id) {
+    out.className = "result bad";
+    out.style.display = "block";
+    out.innerHTML = "<b>Not verified.</b><div style='margin-top:8px;color:#6b7280'>No certificate found for ID: <code>" +
+      esc(id) + "</code></div>";
+  }
+
+  function found(r) {
+    out.className = "result ok";
+    out.style.display = "block";
+    out.innerHTML = "<b>Verified ✅</b>" +
+      "<div class='kv'>" +
+      "<div class='k'>Certificate ID</div><div class='v'>" + esc(r.certificate_id) + "</div>" +
+      "<div class='k'>Recipient</div><div class='v'>" + esc(r.recipient) + "</div>" +
+      "<div class='k'>Event</div><div class='v'>" + esc(r.event) + "</div>" +
+      "<div class='k'>Event dates</div><div class='v'>" + esc(r.dates) + "</div>" +
+      "<div class='k'>Issued</div><div class='v'>" + esc(r.issued) + "</div>" +
+      "<div class='k'>Issuer</div><div class='v'>" + esc(r.issuer) + "</div>" +
+      "</div>";
+  }
+
+  async function verify() {
+    const id = cid.value.trim();
+    if (!id) return;
+    btn.disabled = true;
+    out.style.display = "none";
+    try {
+      const res = await fetch("./certificates.json", { cache: "no-store" });
+      if (!res.ok) throw new Error("Could not load certificates.json");
+      const data = await res.json();
+      const r = data.find(x => String(x.certificate_id).toUpperCase() === id.toUpperCase());
+      if (!r) notFound(id);
+      else found(r);
+    } catch (e) {
+      out.className = "result bad";
+      out.style.display = "block";
+      out.innerHTML = "<b>Error.</b><div style='margin-top:8px;color:#6b7280'>" + esc(e.message) + "</div>";
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  btn.addEventListener('click', verify);
+  cid.addEventListener('keydown', (e) => { if (e.key === "Enter") verify(); });
+</script>
+</body>
+</html>
