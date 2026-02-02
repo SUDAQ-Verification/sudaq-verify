@@ -70,5 +70,21 @@
     "dates": "30 January 2026",
     "issued": "31 January 2026",
     "issuer": "Sudanese Doctors Association in Qatar (SUDAQ)"
+  },
+  {
+    "certificate_id": "SUDAQ-MMC-2026-Q7X4KD",
+    "recipient": "Dr. Afraa Abdelmunam Mohamed Ali Mohamed",
+    "event": "Mega Medical Camp at American Hospital Clinics",
+    "dates": "30 January 2026",
+    "issued": "31 January 2026",
+    "issuer": "Sudanese Doctors Association in Qatar (SUDAQ)"
+  },
+  {
+    "certificate_id": "SUDAQ-MMC-2026-L9P2WF",
+    "recipient": "Dr. Rana Mohamed Khaer Hassan",
+    "event": "Mega Medical Camp at American Hospital Clinics",
+    "dates": "30 January 2026",
+    "issued": "31 January 2026",
+    "issuer": "Sudanese Doctors Association in Qatar (SUDAQ)"
   }
 ]
